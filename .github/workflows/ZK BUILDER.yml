@@ -43,14 +43,12 @@ jobs:
           sudo timedatectl set-timezone UTC
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
-            android-sdk-libsparse-utils aria2 device-tree-compiler erofs-utils \
-            g++ gcc git lz4 \
-            openjdk-17-jdk openjdk-17-jdk-headless \
+            android-sdk-libsparse-utils aria2 \
+            openjdk-17-jdk-headless \
             openssh-client p7zip-full \
-            python-is-python3 python3 python3-pip \
-            xz-utils zip zipalign zlib1g-dev > /dev/null 2>&1
-          pip install --quiet \
-            gdown \
+            python3 python-is-python3 python3-pip \
+            zip zipalign > /dev/null 2>&1
+          pip install --quiet gdown \
             google-api-python-client \
             google-auth-httplib2 \
             google-auth-oauthlib > /dev/null 2>&1
@@ -210,17 +208,17 @@ jobs:
             V14)
               sf_upload "$ROM_OUTPUT" "ZK-EU/ZKUI14"
               gd_upload "1a2O_DmmxH6o4szRJaBQjSfYXjYvdlRUO"
-              echo "ZK_LINK=https://index.projectzk.online/0:/ZK-EU/ZKUI14" >> $GITHUB_ENV
+              echo "ZK_LINK=https://index.projectzk.online/ZK-EU/ZKUI14" >> $GITHUB_ENV
               ;;
             OS1|OS1_A13)
               sf_upload "$ROM_OUTPUT" "ZK-EU/ZKOS1"
               gd_upload "1Ke3q3WE5kjLmST63xaea6pos9L_IjBXq"
-              echo "ZK_LINK=https://index.projectzk.online/0:/ZK-EU/ZKOS1" >> $GITHUB_ENV
+              echo "ZK_LINK=https://index.projectzk.online/ZK-EU/ZKOS1" >> $GITHUB_ENV
               ;;
             OS2|OS2_A14)
               sf_upload "$ROM_OUTPUT" "ZK-EU/ZKOS2"
               gd_upload "1xQJPeS5yI0Tva5AMOJoz05voJQCmzsBR"
-              echo "ZK_LINK=https://index.projectzk.online/0:/ZK-EU/ZKOS2" >> $GITHUB_ENV
+              echo "ZK_LINK=https://index.projectzk.online/ZK-EU/ZKOS2" >> $GITHUB_ENV
               ;;
             OS3|OS3_A15)
               if [ "$IS_PRIVATE_DEVICE" = "true" ]; then
@@ -229,13 +227,14 @@ jobs:
               else
                 sf_upload "$ROM_OUTPUT" "ZK-EU/ZKOS3"
                 gd_upload "1fFNVQDoS4qnOIZP1xyoAiPYGUK2lUUNu"
-                echo "ZK_LINK=https://index.projectzk.online/0:/ZK-EU/ZKOS3" >> $GITHUB_ENV
+                echo "ZK_LINK=https://index.projectzk.online/ZK-EU/ZKOS3" >> $GITHUB_ENV
               fi
               ;;
             *)
               echo "::warning::Unknown ROM_VER=$ROM_VER, skipping upload"
               ;;
           esac
+          [ "${{ github.event.inputs.SFU }}" = "false" ] && pd_upload
           rm -rf "$ZK_HOME/tools/key" "$ZK_HOME/tools/token.pickle" "$ZK_HOME/tools/upload.py"
       - name: Telegram Notification
         if: env.IS_PRIVATE_DEVICE != 'true' && env.ZK_LINK != ''

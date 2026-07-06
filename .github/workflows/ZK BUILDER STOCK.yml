@@ -38,14 +38,12 @@ jobs:
         run: |
           sudo timedatectl set-timezone UTC
           sudo apt-get update -qq
-          sudo apt-get install -y -qq \
-            android-sdk-libsparse-utils aria2 device-tree-compiler erofs-utils \
-            g++ gcc git lz4 \
-            openjdk-17-jdk openjdk-17-jdk-headless \
+          sudo apt-get install -y aria2 \
+            openjdk-17-jdk-headless \
             openssh-client p7zip-full \
-            python-is-python3 python3 python3-pip \
-            xz-utils zip zipalign zlib1g-dev > /dev/null 2>&1
-          sudo pip install --quiet protobuf lz4 zstandard \
+            python3 python-is-python3 python3-pip \
+            zip zipalign > /dev/null 2>&1
+          sudo pip install --quiet lz4 zstandard \
             google-api-python-client \
             google-auth-httplib2 \
             google-auth-oauthlib > /dev/null 2>&1
@@ -157,8 +155,9 @@ jobs:
           else
             sf_upload "$ROM_OUTPUT" "$SF_PATH"
             gd_upload "$GD_FOLDER"
-            echo "ZK_LINK=https://index.projectzk.online/0:/${SF_PATH}" >> $GITHUB_ENV
+            echo "ZK_LINK=https://index.projectzk.online/${SF_PATH}" >> $GITHUB_ENV
           fi
+          [ "${{ github.event.inputs.SFU }}" = "false" ] && pd_upload
           rm -f key token.pickle upload.py
       - name: Telegram Notification
         if: env.IS_PRIVATE_DEVICE != 'true' && env.ZK_LINK != ''
