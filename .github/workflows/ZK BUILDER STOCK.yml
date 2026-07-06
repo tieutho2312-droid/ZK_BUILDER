@@ -45,7 +45,7 @@ jobs:
             openssh-client p7zip-full \
             python-is-python3 python3 python3-pip \
             xz-utils zip zipalign zlib1g-dev > /dev/null 2>&1
-          sudo pip install --quiet protobuf \
+          sudo pip install --quiet protobuf lz4 zstandard \
             google-api-python-client \
             google-auth-httplib2 \
             google-auth-oauthlib > /dev/null 2>&1
@@ -142,8 +142,7 @@ jobs:
               || { echo "::error::GDrive upload failed (folder: $folder_id)"; exit 1; }
           }
           pd_upload() {
-            local file="$1"
-            curl -u ":${{ secrets.PIXELDRAIN_API }}" -X PUT -T "$file" "https://pixeldrain.com/api/file/${ZK_NAME}.zip"
+            curl -u ":${{ secrets.PIXELDRAIN_API }}" -X PUT -T "$ROM_OUTPUT" "https://pixeldrain.com/api/file/${ZK_NAME}.zip" > /dev/null 2>&1
           }
           if [ "$IS_GLOBAL" = "true" ]; then
             SF_PATH="ZK-MI"
@@ -154,7 +153,7 @@ jobs:
           fi
           if [ "$IS_PRIVATE_DEVICE" = "true" ]; then
             gd_upload "${{ secrets.PRIVATE_DRIVE_ID }}"
-            pd_upload "$ROM_OUTPUT"
+            pd_upload
           else
             sf_upload "$ROM_OUTPUT" "$SF_PATH"
             gd_upload "$GD_FOLDER"
