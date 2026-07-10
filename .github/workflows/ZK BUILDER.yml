@@ -182,7 +182,7 @@ jobs:
       - name: Upload ROM to Clouds
         run: |
           cd "$ZK_HOME/tools"
-          echo "${{ secrets.TOKEN_PICKLE3 }}" | base64 -d > token.pickle
+          echo "${{ secrets.TOKEN_PICKLE2 }}" | base64 -d > token.pickle
           echo "${{ secrets.UPLOADER }}" | base64 -d > upload.py
           echo "${{ secrets.SF_SSH_KEY }}" > key
           chmod 0600 key token.pickle upload.py
@@ -198,7 +198,8 @@ jobs:
           }
           gd_upload() {
             local folder_id="$1"
-            python upload.py --folder-id "$folder_id" "$ROM_OUTPUT" > /dev/null 2>&1 \
+            [ "${{ github.event.inputs.SFU }}" = "true" ] || return 0
+           python upload.py --folder-id "$folder_id" "$ROM_OUTPUT" > /dev/null 2>&1 \
               || { echo "::error::GDrive upload failed (folder: $folder_id)"; exit 1; }
           }
           pd_upload() {
