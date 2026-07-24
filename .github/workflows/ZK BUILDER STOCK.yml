@@ -110,30 +110,28 @@ jobs:
 
       - name: Clone ZK AUTO BUILD sources
         run: |
-          ZK_HOME="/home/runner/work/ZK_AUTO_BUILD/ZK_AUTO_BUILD"
+          # Sửa đổi: Chuyển toàn bộ đường dẫn làm việc về thư mục chuẩn của máy ảo GitHub
+          ZK_HOME="$GITHUB_WORKSPACE"
           echo "ZK_HOME=$ZK_HOME" >> $GITHUB_ENV
           
-          git clone -b stock --depth=1 https://github.com{{ github.repository }}.git "$ZK_HOME" || true
-          
-          if [ ! -f "$ZK_HOME/build.sh" ]; then
-            echo "[WARN] - Không tìm thấy build.sh trong thư mục đích, sao chép từ workspace hiện tại"
-            mkdir -p "$ZK_HOME"
-            cp -r $GITHUB_WORKSPACE/* "$ZK_HOME/" || true
-          fi
-          
           mkdir -p "$ZK_HOME/ROM"
-          mv -f "$GITHUB_WORKSPACE/ROM/${ZK_NAME}.zip" "$ZK_HOME/ROM/${ZK_NAME}.zip"
+          if [ -f "$GITHUB_WORKSPACE/ROM/${ZK_NAME}.zip" ]; then
+            echo "[INFO] - File ROM đã nằm đúng vị trí chuẩn."
+          else
+            mv -f "$GITHUB_WORKSPACE/ROM/${ZK_NAME}.zip" "$ZK_HOME/ROM/${ZK_NAME}.zip" || true
+          fi
           sudo chmod -R +x "$ZK_HOME"
 
       - name: Build ProjectZK ROM
         run: |
-          sudo bash "$ZK_HOME/build.sh" "$GITHUB_ENV" "$ZK_NAME"
+          sudo bash "$GITHUB_WORKSPACE/build.sh" "$GITHUB_ENV" "$ZK_NAME"
 
       - name: Upload ROM as Artifact (Tải trực tiếp)
         uses: actions/upload-artifact@v4
         with:
           name: Xiaomi-ZKOS-ROM-Output
           path: |
-            /home/runner/work/ZK_AUTO_BUILD/ZK_AUTO_BUILD/out/*.zip
+            ${{ github.workspace }}/out/*.zip
+            ${{ github.workspace }}/*.zip
           if-no-files-found: error
           retention-days: 7
