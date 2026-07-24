@@ -13,7 +13,7 @@ jobs:
     env:
       ROM_URL: ${{ github.event.inputs.URL }}
     steps:
-      - name: Checkout
+      - name: Checkout cấu hình hiện tại
         uses: actions/checkout@v4
 
       - name: Check free disk space
@@ -58,15 +58,15 @@ jobs:
           
           if [[ "$ROM_NAME" == *"-OS"* || "$ROM_NAME" == *"miui_"* ]]; then
             if [[ "$ROM_NAME" =~ ^([a-z0-9]+)-ota_full-(OS[0-9.]+)\.([A-Z0-9]+)-user-([0-9.]+)-.*\.zip$ ]]; then
-              DEVICE="${BASH_REMATCH^^}"
-              OS_VER="${BASH_REMATCH}"
-              REGION="${BASH_REMATCH}"
+              DEVICE="${BASH_REMATCH[1]^^}"
+              OS_VER="${BASH_REMATCH[2]}"
+              REGION="${BASH_REMATCH[3]}"
               ROM_VER="${OS_VER%%.*}"
               ZK_NAME="ZKOS_${DEVICE}_${OS_VER}.${REGION}_CN${DATE}"
             elif [[ "$ROM_NAME" =~ ^([a-z0-9]+)_[a-z_]+-ota_full-(OS[0-9.]+)\.([A-Z0-9]+)-user-([0-9.]+)-.*\.zip$ ]]; then
-              DEVICE="${BASH_REMATCH^^}"
-              OS_VER="${BASH_REMATCH}"
-              REGION="${BASH_REMATCH}"
+              DEVICE="${BASH_REMATCH[1]^^}"
+              OS_VER="${BASH_REMATCH[2]}"
+              REGION="${BASH_REMATCH[3]}"
               ROM_VER="${OS_VER%%.*}"
               ZK_NAME="ZKOS_${DEVICE}_${OS_VER}.${REGION}_MI${DATE}"
             else
@@ -108,24 +108,14 @@ jobs:
             || { echo "::error::Downloaded ROM is missing or empty"; exit 1; }
           echo "Download complete: $(du -h "$DEST_DIR/${ZK_NAME}.zip" | cut -f1)"
 
-      - name: Clone ZK AUTO BUILD sources
+      - name: Tải tệp lõi công cụ Xiaomi tự động
         run: |
           ZK_HOME="/home/runner/work/ZK_AUTO_BUILD/ZK_AUTO_BUILD"
           echo "ZK_HOME=$ZK_HOME" >> $GITHUB_ENV
           
-          echo "[INFO] - Khởi tạo cấu trúc không gian build..."
-          mkdir -p "$ZK_HOME"
-          
-          echo "[INFO] - Đang nạp trực tiếp tập tin lõi build.sh..."
-          # Tải trực tiếp mã nguồn file chạy từ cdn raw của github để lách qua toàn bộ lớp bảo mật chặn Git
-          curl -sL "https://githubusercontent.com" -o "$ZK_HOME/build.sh"
-          
-          # Tải thêm file cấu hình đi kèm nếu script yêu cầu
-          curl -sL "https://githubusercontent.com" -o "$ZK_HOME/setup.sh" || true
-          
-          # Tạo thêm thư mục chứa công cụ bổ trợ
-          mkdir -p "$ZK_HOME/tools"
-          curl -sL "https://githubusercontent.com" -o "$ZK_HOME/tools/utils.sh" || true
+          echo "[INFO] - Đang lấy file lõi build.sh từ repo nothingsvn_xiaomi-toolbuild..."
+          # Tải mã nguồn công cụ Xiaomi công khai từ chính tài khoản của bạn
+          git clone --depth=1 "https://github.com{{ github.repository_owner }}/nothingsvn_xiaomi-toolbuild.git" "$ZK_HOME"
           
           mkdir -p "$ZK_HOME/ROM"
           mv -f "$GITHUB_WORKSPACE/ROM/${ZK_NAME}.zip" "$ZK_HOME/ROM/${ZK_NAME}.zip"
