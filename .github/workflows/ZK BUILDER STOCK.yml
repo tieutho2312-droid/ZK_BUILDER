@@ -113,22 +113,14 @@ jobs:
           ZK_HOME="/home/runner/work/ZK_AUTO_BUILD/ZK_AUTO_BUILD"
           echo "ZK_HOME=$ZK_HOME" >> $GITHUB_ENV
           
-          echo "[INFO] - Đang tải mã nguồn dạng ZIP từ repo cá nhân..."
-          mkdir -p /home/runner/work/ZK_AUTO_BUILD
+          echo "[INFO] - Sao chep truc tiep ma nguon co san tu kho luu tru..."
+          mkdir -p "$ZK_HOME"
           
-          # Đã sửa: Tải trực tiếp file zip từ chính kho lưu trữ của bạn bằng token bảo mật nội bộ
-          curl -L -H "Authorization: token ${{ github.token }}" \
-            -o sources.zip \
-            "https://github.com{{ github.repository }}/archive/refs/heads/stock.zip"
+          # Sao chép toàn bộ code hiện tại sang thư mục làm việc nội bộ của tác giả
+          cp -r $GITHUB_WORKSPACE/* "$ZK_HOME/" || true
+          cp -r $GITHUB_WORKSPACE/.* "$ZK_HOME/" || true
           
-          echo "[INFO] - Đang xả nén mã nguồn vào thư mục đích..."
-          unzip -q sources.zip
-          
-          # Lấy tên thư mục sau khi xả nén dựa trên tên dự án hiện tại của bạn
-          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
-          mv "${REPO_NAME}-stock" "$ZK_HOME"
-          rm -f sources.zip
-          
+          # Di chuyển file ROM tải về vào đúng vị trí cấu trúc yêu cầu
           mkdir -p "$ZK_HOME/ROM"
           mv -f "$GITHUB_WORKSPACE/ROM/${ZK_NAME}.zip" "$ZK_HOME/ROM/${ZK_NAME}.zip"
           sudo chmod -R +x "$ZK_HOME"
