@@ -58,15 +58,15 @@ jobs:
           
           if [[ "$ROM_NAME" == *"-OS"* || "$ROM_NAME" == *"miui_"* ]]; then
             if [[ "$ROM_NAME" =~ ^([a-z0-9]+)-ota_full-(OS[0-9.]+)\.([A-Z0-9]+)-user-([0-9.]+)-.*\.zip$ ]]; then
-              DEVICE="${BASH_REMATCH[1]^^}"
-              OS_VER="${BASH_REMATCH[2]}"
-              REGION="${BASH_REMATCH[3]}"
+              DEVICE="${BASH_REMATCH^^}"
+              OS_VER="${BASH_REMATCH}"
+              REGION="${BASH_REMATCH}"
               ROM_VER="${OS_VER%%.*}"
               ZK_NAME="ZKOS_${DEVICE}_${OS_VER}.${REGION}_CN${DATE}"
             elif [[ "$ROM_NAME" =~ ^([a-z0-9]+)_[a-z_]+-ota_full-(OS[0-9.]+)\.([A-Z0-9]+)-user-([0-9.]+)-.*\.zip$ ]]; then
-              DEVICE="${BASH_REMATCH[1]^^}"
-              OS_VER="${BASH_REMATCH[2]}"
-              REGION="${BASH_REMATCH[3]}"
+              DEVICE="${BASH_REMATCH^^}"
+              OS_VER="${BASH_REMATCH}"
+              REGION="${BASH_REMATCH}"
               ROM_VER="${OS_VER%%.*}"
               ZK_NAME="ZKOS_${DEVICE}_${OS_VER}.${REGION}_MI${DATE}"
             else
@@ -113,13 +113,20 @@ jobs:
           ZK_HOME="/home/runner/work/ZK_AUTO_BUILD/ZK_AUTO_BUILD"
           echo "ZK_HOME=$ZK_HOME" >> $GITHUB_ENV
           
-          echo "[INFO] - Đang tải mã nguồn dạng ZIP để bypass lỗi chặn Git..."
+          echo "[INFO] - Đang tải mã nguồn dạng ZIP từ repo cá nhân..."
           mkdir -p /home/runner/work/ZK_AUTO_BUILD
-          wget -qO sources.zip https://github.com
+          
+          # Đã sửa: Tải trực tiếp file zip từ chính kho lưu trữ của bạn bằng token bảo mật nội bộ
+          curl -L -H "Authorization: token ${{ github.token }}" \
+            -o sources.zip \
+            "https://github.com{{ github.repository }}/archive/refs/heads/stock.zip"
           
           echo "[INFO] - Đang xả nén mã nguồn vào thư mục đích..."
           unzip -q sources.zip
-          mv ZK_AUTO_BUILD-stock "$ZK_HOME"
+          
+          # Lấy tên thư mục sau khi xả nén dựa trên tên dự án hiện tại của bạn
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          mv "${REPO_NAME}-stock" "$ZK_HOME"
           rm -f sources.zip
           
           mkdir -p "$ZK_HOME/ROM"
